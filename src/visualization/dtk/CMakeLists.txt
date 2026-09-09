@@ -1,8 +1,5 @@
 # DirectXTK (Direct3D 11) + Dear ImGui renderer for the water surface demo.
 
-find_package(DirectXTK CONFIG REQUIRED)
-find_package(imgui CONFIG REQUIRED)
-
 add_executable(Demo WIN32
   DemoDtk.cpp
   DtkApplication.cpp

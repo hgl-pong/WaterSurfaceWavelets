@@ -11,22 +11,28 @@
 
   Download repository:
   #+BEGIN_SRC bash
-  git clone --recursive https://github.com/lecopivo/WaterSurfaceWavelets.git
+  git clone https://github.com/lecopivo/WaterSurfaceWavelets.git
   #+END_SRC
 
-  Install prerequisites with vcpkg (takes a couple of minutes). The default
-  renderer needs DirectXTK, Dear ImGui with the Direct3D 11 and Win32
-  bindings, and Eigen3:
+  No vcpkg or manual dependency installation is needed. CMake 3.21+ fetches
+  the third-party libraries on the first configure: Eigen 3.4.0, DirectXTK
+  (oct2025) and Dear ImGui v1.92.9b with the Direct3D 11 and Win32 backends.
+  Requirements: Visual Studio 2022 (or newer) with the Windows 10/11 SDK and
+  an internet connection for the first configure.
+
+  For an offline build, pass local source trees instead of downloading them:
 
   #+BEGIN_SRC bash
-    vcpkg install directxtk "imgui[dx11-binding,win32-binding]" eigen3
+    cmake -S . -B build/dtk -G "Visual Studio 17 2022" -A x64 \
+          -DFETCHCONTENT_SOURCE_DIR_EIGEN3=<eigen-src> \
+          -DFETCHCONTENT_SOURCE_DIR_DIRECTXTK=<directxtk-src> \
+          -DFETCHCONTENT_SOURCE_DIR_IMGUI=<imgui-src>
   #+END_SRC
 
 ** Build and run the DirectXTK demo (default)
 
   #+BEGIN_SRC bash
-    cmake -S . -B build/dtk -G "Visual Studio 17 2022" -A x64 \
-          -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
+    cmake -S . -B build/dtk -G "Visual Studio 17 2022" -A x64
     cmake --build build/dtk --config Release --target Demo
   #+END_SRC
 

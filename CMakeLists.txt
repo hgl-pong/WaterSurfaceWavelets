@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.21)
+
+project(WaterSurfaceWavelets LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -9,5 +11,7 @@ if (OPENMP_FOUND)
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
+
+include(cmake/Dependencies.cmake)
 
 add_subdirectory(src)
