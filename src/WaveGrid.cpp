@@ -2,6 +2,7 @@
 #include "math/Math.h"
 
 #include <algorithm>
+#include <cassert>
 
 namespace WaterWavelets {
 

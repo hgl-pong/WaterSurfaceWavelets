@@ -2,6 +2,11 @@
 
   [[file:img/teaser.gif]]
 
+  Real-time water surface simulation based on the paper *Water Surface
+  Wavelets* (Jeschke et al., SIGGRAPH 2018). The simulation core is
+  renderer-agnostic; the interactive demo uses a DirectXTK (Direct3D 11)
+  renderer with a Dear ImGui panel.
+
 ** Installation
 
   Download repository:
@@ -9,27 +14,69 @@
   git clone --recursive https://github.com/lecopivo/WaterSurfaceWavelets.git
   #+END_SRC
 
-  Install prerequisites(takes couple of minutes):
+  Install prerequisites with vcpkg (takes a couple of minutes). The default
+  renderer needs DirectXTK, Dear ImGui with the Direct3D 11 and Win32
+  bindings, and Eigen3:
+
   #+BEGIN_SRC bash
-    pushd vcpkg
-    ./bootstrap-vcpkg.sh 
-    ./vcpkg install magnum-integration[imgui]
-    popd
+    vcpkg install directxtk "imgui[dx11-binding,win32-binding]" eigen3
   #+END_SRC
 
-  To build:
+** Build and run the DirectXTK demo (default)
+
   #+BEGIN_SRC bash
-    mkdir -p build/release
-    pushd build/release
-    cmake ../.. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=../../vcpkg/scripts/buildsystems/vcpkg.cmake 
-    make -j
-    popd
+    cmake -S . -B build/dtk -G "Visual Studio 17 2022" -A x64 \
+          -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
+    cmake --build build/dtk --config Release --target Demo
   #+END_SRC
 
-  And to run an example:
+  Run:
+
   #+BEGIN_SRC bash
-    ./build/release/src/visualization/Demo
+    ./build/dtk/src/visualization/dtk/Release/Demo.exe
   #+END_SRC
 
-  
-  
+  Controls:
+
+  - Rotate:   Alt + LMB
+  - Zoom:     Alt + RMB
+  - Pan:      Alt + MMB
+  - Recenter: f
+  - Exit:     Esc
+
+  The in-app panel exposes the simulation controls (wave direction, amplitude,
+  time step, screen-space grid update, continuous point source, reset and
+  wireframe view).
+
+  Optional environment variables (handy for automated captures):
+
+  - =DTK_CAPTURE_PATH=, =DTK_CAPTURE_FRAME=: save the back buffer to a PNG
+    after the given number of frames and exit.
+  - =DTK_LOG_PATH=: write per-frame update/draw/present timings.
+  - =DTK_CAMERA_DISTANCE=: initial camera distance (default =60=).
+  - =DTK_DEBUG=: =1= water only, =2= terrain only, =3= flat water,
+    =4= disable face culling.
+
+** GPU frame capture with rdc-cli (RenderDoc)
+
+  The Direct3D 11 renderer can be captured and inspected with [[https://pypi.org/project/rdc-cli/][rdc-cli]]:
+
+  #+BEGIN_SRC bash
+    pip install rdc-cli
+    rdc capture --frame 120 -o capture.rdc -- ./build/dtk/src/visualization/dtk/Release/Demo.exe
+    rdc open capture.rdc
+    rdc info                       # API, event/draw counts
+    rdc events                     # clear / draws / resolve / present
+    rdc draws                      # terrain, water and ImGui draws
+    rdc bindings 40                # e.g. profileTexture bound to vs+ps
+    rdc rt 68 -o frame.png         # render target after the last draw
+    rdc assert-clean --min-severity MEDIUM
+    rdc close
+  #+END_SRC
+
+** Tests
+
+  #+BEGIN_SRC bash
+    cmake --build build/dtk --config Release --target integration_test
+    ./build/dtk/src/tests/Release/integration_test
+  #+END_SRC
